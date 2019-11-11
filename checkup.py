@@ -1,7 +1,9 @@
+import time
 import os
 
-# debug level: 1 = some, 2 = more
-debug = 1
+
+# debug level: 0 = least, 1 = some, 2 = more
+debug = 0
 
 # parse config file for parameters
 def parseConfigFile():
@@ -37,9 +39,50 @@ def parseConfigFile():
                     Address = parts[1]
 
 
-def StartUp():
-    print("Starting Up....")
+def downToUp():
+    print("Alert: Host came up!")
+
+def upToDown():
+    print("Alert: Host went down!")
+
+# loop through checks
+def loop():
+    if debug >= 2:
+        print("Starting loop")
+    firstLoop = True
+    command = "ping -c 1 "+Address+"> /dev/null 2>&1"
+    if debug >= 2:
+        print("State command:",command)
+    while(True):
+        state = os.system(command)
+        if state == 0:
+            if debug >= 1:
+                print("Host is up")
+        else:
+            if debug >= 1:
+                print("Host is down")
+
+        if firstLoop:
+            firstLoop = False
+            lastState = state
+        else:
+            if lastState != state:
+                if state:
+                    upToDown()
+                else:
+                    downToUp()
+            lastState = state
+
+        if debug >= 2:
+            print("Finished loop")
+        time.sleep(Interval)
+
+# get things going
+def startUp():
+    print("Initializing....")
     print("Parsing config file....")
     parseConfigFile()
+    print("Starting...")
+    loop()
 
-StartUp()
+startUp()
